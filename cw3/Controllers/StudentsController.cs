@@ -32,17 +32,17 @@ namespace cw3.Controllers
         //    return Ok(student);
         //}
 
-        //[HttpPut]
-        //public IActionResult PutData(int id)
-        //{
-        //    return Ok("Aktualizacja zakonczona");
-        //}
+        [HttpPut]
+        public IActionResult PutData(int id)
+        {
+            return Ok("Aktualizacja zakonczona");
+        }
 
-        //[HttpDelete]
-        //public IActionResult DeleteData(int id)
-        //{
-        //    return Ok("Usuwanie zakończone");
-        //}
+        [HttpDelete]
+        public IActionResult DeleteData(int id)
+        {
+            return Ok("Usuwanie zakończone");
+        }
 
     }
 }
