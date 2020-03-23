@@ -10,10 +10,6 @@ namespace cw3.DAL
     public class MockDbService : IDbService
     {
         private static IEnumerable<Student> _students;
-        static MockDbService()
-        {
-
-        }
 
         public IEnumerable<Student> GetStudents()
         {

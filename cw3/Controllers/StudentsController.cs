@@ -1,8 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Data.SqlClient;
-using System.Linq;
-using System.Threading.Tasks;
 using cw3.DAL;
 using cw3.Models;
 using Microsoft.AspNetCore.Mvc;
@@ -47,7 +45,6 @@ namespace cw3.Controllers
                         st.IdEnrollment = int.Parse(dr["IdEnrollment"].ToString());
 
                         students.Add(st);
-
                     }
 
                     return Ok(students);
@@ -55,11 +52,11 @@ namespace cw3.Controllers
             }
         }
 
-        [HttpGet("{id]")]
+        [HttpGet("{id}")]
         public IActionResult GetStudent(string id)
         {
             var enrollment = new List<string>();
-            using (var con = new SqlConnection("Data Source=db.mssql;Initial Catalog=s18977;Integrated Security=True"))
+            using (var con = new SqlConnection("Data Source=db.mssql;Initial Catalog=s18977; Integrated Security=True"))
             {
                 using (var com = new SqlCommand())
                 {
@@ -78,17 +75,5 @@ namespace cw3.Controllers
                 }
             }
         }
-
-        //[HttpPut ("{id}")]
-        //public IActionResult PutData(int id)
-        //{
-        //    return Ok("Aktualizacja zakonczona");
-        //}
-
-        //[HttpDelete]
-        //public IActionResult DeleteData(int id)
-        //{
-        //    return Ok("Usuwanie zakończone");
-        //}
     }
 }
