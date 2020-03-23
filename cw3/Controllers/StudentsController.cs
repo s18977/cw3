@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Data.SqlClient;
 using System.Linq;
 using System.Threading.Tasks;
 using cw3.DAL;
@@ -20,29 +21,74 @@ namespace cw3.Controllers
         }
 
         [HttpGet]
-        public IActionResult GetStudents(string orderBy)
+        public IActionResult GetStudents()
         {
-            return Ok(_dbService.GetStudents());
+            var students = new List<Student>();
+            var id = "s1234";
+
+            using (var con = new SqlConnection("Data Source=db.mssql; Initial Catalog=s18977; Integrated Security=True"))
+            {
+                using (var com = new SqlCommand())
+                {
+                    com.Connection = con;
+                    com.CommandText = "SELECT * FROM Students WHERE IndexNumber=@id";
+                    com.Parameters.AddWithValue("id", id);
+
+                    con.Open();
+                    var dr = com.ExecuteReader();
+
+                    while (dr.Read())
+                    {
+                        var st = new Student();
+                        st.FirstName = dr["FirstName"].ToString();
+                        st.LastName = dr["LastName"].ToString();
+                        st.LastName = dr["LastName"].ToString();
+                        st.BirthDate = DateTime.Parse(dr["BirthDate"].ToString());
+                        st.IdEnrollment = int.Parse(dr["IdEnrollment"].ToString());
+
+                        students.Add(st);
+
+                    }
+
+                    return Ok(students);
+                }
+            }
         }
 
-        //[HttpPost]
-        //public IActionResult CreateStudent(Student student)
+        [HttpGet("{id]")]
+        public IActionResult GetStudent(string id)
+        {
+            var enrollment = new List<string>();
+            using (var con = new SqlConnection("Data Source=db.mssql;Initial Catalog=s18977;Integrated Security=True"))
+            {
+                using (var com = new SqlCommand())
+                {
+                    com.Connection = con;
+                    com.CommandText = "SELECT * FROM Enrollment WHERE IdEnrollment=(SELECT IdEnrollment FROM Student WHERE IndexNumber = \'" + id + "\')";
+
+                    con.Open();
+                    var dr = com.ExecuteReader();
+
+                    while (dr.Read())
+                    {
+                        enrollment.Add(dr["Semester"].ToString());
+                    }
+
+                    return Ok(enrollment);
+                }
+            }
+        }
+
+        //[HttpPut ("{id}")]
+        //public IActionResult PutData(int id)
         //{
-        //    student.IndexNumber = $"s{new Random().Next(1, 20000)}";
-        //    return Ok(student);
+        //    return Ok("Aktualizacja zakonczona");
         //}
 
-        [HttpPut]
-        public IActionResult PutData(int id)
-        {
-            return Ok("Aktualizacja zakonczona");
-        }
-
-        [HttpDelete]
-        public IActionResult DeleteData(int id)
-        {
-            return Ok("Usuwanie zakończone");
-        }
-
+        //[HttpDelete]
+        //public IActionResult DeleteData(int id)
+        //{
+        //    return Ok("Usuwanie zakończone");
+        //}
     }
 }
