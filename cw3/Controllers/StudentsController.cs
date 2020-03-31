@@ -24,13 +24,13 @@ namespace cw3.Controllers
             var students = new List<Student>();
             var id = "s1234";
 
-            using (var con = new SqlConnection("Data Source=db.mssql; Initial Catalog=s18977; Integrated Security=True"))
+            using (var con = new SqlConnection("Data Source=db-mssql; Initial Catalog=s18977; Integrated Security=True"))
             {
                 using (var com = new SqlCommand())
                 {
                     com.Connection = con;
-                    com.CommandText = "SELECT * FROM Students WHERE IndexNumber=@id";
-                    com.Parameters.AddWithValue("id", id);
+                    com.CommandText = "SELECT * FROM Students";
+                    //com.Parameters.AddWithValue("id", id);
 
                     con.Open();
                     var dr = com.ExecuteReader();
@@ -42,7 +42,7 @@ namespace cw3.Controllers
                         st.LastName = dr["LastName"].ToString();
                         st.LastName = dr["LastName"].ToString();
                         st.BirthDate = DateTime.Parse(dr["BirthDate"].ToString());
-                        st.IdEnrollment = int.Parse(dr["IdEnrollment"].ToString());
+                        st.Studies = dr["IdEnrollment"].ToString();
 
                         students.Add(st);
                     }
@@ -56,7 +56,7 @@ namespace cw3.Controllers
         public IActionResult GetStudent(string id)
         {
             var enrollment = new List<string>();
-            using (var con = new SqlConnection("Data Source=db.mssql;Initial Catalog=s18977; Integrated Security=True"))
+            using (var con = new SqlConnection("Data Source=db-mssql;Initial Catalog=s18977; Integrated Security=True"))
             {
                 using (var com = new SqlCommand())
                 {
