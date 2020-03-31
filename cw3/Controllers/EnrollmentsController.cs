@@ -16,7 +16,6 @@ namespace cw3.Controllers
         [HttpPost]
         public IActionResult EnrollStudent(EnrollStudentRequest request)
         {
-            var Enrollments = new List<string>();
             var student = new Student();
             string dbName = "Data Source=db-mssql; Initial Catalog=s18977; Integrated Security=True";
             
@@ -79,15 +78,16 @@ namespace cw3.Controllers
                         return Ok(201);
                     } catch (Exception e)
                     {
-                        return BadRequest("Error" + e);
-
                         try
                         {
                             transaction.Rollback();
-                        }catch(Exception ex)
+                        }
+                        catch (Exception ex)
                         {
                             Console.WriteLine("Error at Rollback! " + ex.Message);
                         }
+
+                        return BadRequest("ROLLBACKED \n" + e);
                     }
                 }
             }
