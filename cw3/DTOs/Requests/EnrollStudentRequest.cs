@@ -15,7 +15,7 @@ namespace cw3.DTOs.Requests
         [MaxLength(20)]
         public string FirstName { get; set; }
 
-        [Required(ErrorMessage = "Musisz podać imię")]
+        [Required(ErrorMessage = "Musisz podać nazwisko")]
         [MaxLength(255)]
         public string LastName { get; set; }
         [Required]
