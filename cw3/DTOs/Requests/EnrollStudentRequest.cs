@@ -8,7 +8,7 @@ namespace cw3.DTOs.Requests
 {
     public class EnrollStudentRequest
     {
-        [Required]
+        [Required(ErrorMessage = "Musisz podać index studenta od sXXXXX")]
         public string IndexNumber { get; set; }
 
         [Required(ErrorMessage = "Musisz podać imię")]
@@ -18,11 +18,11 @@ namespace cw3.DTOs.Requests
         [Required(ErrorMessage = "Musisz podać nazwisko")]
         [MaxLength(255)]
         public string LastName { get; set; }
-        [Required]
+        [Required(ErrorMessage = "Musisz podać date urodzenia")]
         public string BirthDate { get; set; }
 
-        [Required]
-        public string StudiesName { get; set; }
+        [Required(ErrorMessage = "Musisz podać nazwe studiow")]
+        public string Studies { get; set; }
 
         public bool done {get; set;}
 

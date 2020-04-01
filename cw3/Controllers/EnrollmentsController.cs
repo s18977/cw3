@@ -22,14 +22,12 @@ namespace cw3.Controllers
             _service = service;
         }
 
-
-
         public string dbName = "Data Source=db-mssql;Initial Catalog=s18977;Integrated Security=True;";
         [HttpPost]
         public IActionResult EnrollStudent(EnrollStudentRequest request)
         {
-            Console.WriteLine(request.done);
-            if (request.done == false)
+
+            if (_service.EnrollStudent(request) == false)
                 return BadRequest(400);
 
             return Ok(200);
@@ -39,8 +37,7 @@ namespace cw3.Controllers
         [Route("api/enrollments/promotions")]
         public IActionResult Promote(PromoteStudents promote)
         {
-            Console.WriteLine(promote.done);
-            if (promote.done == false)
+            if (_service.Promote(promote) == false)
             {
                 return BadRequest(404);
             }

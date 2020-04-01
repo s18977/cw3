@@ -30,25 +30,24 @@ namespace cw3.Services
                     {
 //                      SPRAWDZANIE CZY PODANE STUDIA ISTNIEJA
                         com.CommandText = "SELECT * FROM Studies WHERE name = name";
-                        com.Parameters.AddWithValue("name", request.StudiesName);
+                        com.Parameters.AddWithValue("name", request.Studies);
                         com.Transaction = transaction;
                         SqlDataReader reader = com.ExecuteReader();
 
                         if (!reader.HasRows)
                         {
-                            Console.WriteLine("studies");
                             return false;
                         }
 
 //                      DODAWANIE DO ENROLLMENT
                         com.CommandText = "SELECT * FROM enrollment e INNER JOIN studies s on s.idstudy = e.idstudy WHERE semester = 1 AND name = sname";
-                        com.Parameters.AddWithValue("sname", request.StudiesName);
+                        com.Parameters.AddWithValue("sname", request.Studies);
 
                         if (!reader.HasRows)
                         {
                             com.CommandText = "INSERT INTO enrollment(idenrollment, semester, idstudy, startdate)" +
                                 "VALUES((select Max(idEnrollment)+1 from enrollment), 1, SELECT idstudy FROM Studies WHERE name = sname), GETDATE())";
-                            com.Parameters.AddWithValue("sname", request.StudiesName);
+                            com.Parameters.AddWithValue("sname", request.Studies);
 
                             com.ExecuteNonQuery();
                         }
@@ -99,11 +98,6 @@ namespace cw3.Services
             }
         }
 
-        private IActionResult BadRequest(string v)
-        {
-            throw new NotImplementedException();
-        }
-
         [HttpPost]
         [Route("api/enrollments/promotions")]
         public bool Promote(PromoteStudents promote)
@@ -116,15 +110,15 @@ namespace cw3.Services
                     con.Open();
                     SqlTransaction transaction = con.BeginTransaction();
 
-                    com.CommandText = "SELECT * FROM Enrollment e INNER JOIN Studies s on s.idstudy = e.idstudy WHERE e.semester = reqSemester AND s.name = sname";
+                    com.CommandText = "SELECT * FROM Enrollment e INNER JOIN Studies s ON s.idstudy = e.idstudy WHERE e.semester = reqSemester AND s.name = sname";
                     com.Parameters.AddWithValue("sname", promote.sname);
                     com.Parameters.AddWithValue("reqSemester", promote.semester);
                     SqlDataReader reader = com.ExecuteReader();
 
                     if (!reader.Read())
                     {
-                        reader.Close();
                         transaction.Rollback();
+                        reader.Close();
                         return false;
                     }
 
@@ -139,10 +133,9 @@ namespace cw3.Services
                     com.ExecuteNonQuery();
                     transaction.Commit();
 
+                    return true;
                 }
             }
-
-            return false;
         }
     }
 }
