@@ -11,7 +11,7 @@ namespace cw3.DTOs.Requests
         [Required]
         public string IndexNumber { get; set; }
 
-        [Required (ErrorMessage = "Musisz podać imię")]
+        [Required(ErrorMessage = "Musisz podać imię")]
         [MaxLength(20)]
         public string FirstName { get; set; }
 
@@ -23,6 +23,8 @@ namespace cw3.DTOs.Requests
 
         [Required]
         public string StudiesName { get; set; }
+
+        public bool done {get; set;}
 
     }
 }
