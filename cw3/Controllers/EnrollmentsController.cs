@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Data.SqlClient;
 using System.Linq;
 using System.Net.Http;
+using cw3.DAL;
 using cw3.DTOs.Requests;
 using cw3.Models;
 using Microsoft.AspNetCore.Mvc;
@@ -11,13 +12,13 @@ namespace cw3.Controllers
 {
     [ApiController]
     [Route("api/enrollments")]
-    public class EnrollemntsStudentRequest : ControllerBase
+    public class EnrollmentsController : ControllerBase
     {
         [HttpPost]
         public IActionResult EnrollStudent(EnrollStudentRequest request)
         {
             var student = new Student();
-            string dbName = "Data Source=db-mssql; Initial Catalog=s18977; Integrated Security=True";
+            string dbName = "Data Source=db-mssql;Initial Catalog=s18977;Integrated Security=True;";
             
             using (var con = new SqlConnection(dbName))
             {
@@ -29,8 +30,8 @@ namespace cw3.Controllers
                     try
                     {
 //                      SPRAWDZANIE CZY PODANE STUDIA ISTNIEJA
-                        com.CommandText = "select * from studies where name = @name";
-                        com.Parameters.AddWithValue("@name", request.StudiesName);
+                        com.CommandText = "SELECT * FROM Studies WHERE name = name";
+                        com.Parameters.AddWithValue("name", request.StudiesName);
                         com.Transaction = transaction;
                         SqlDataReader reader = com.ExecuteReader();
 
@@ -38,39 +39,42 @@ namespace cw3.Controllers
                         {
                             return BadRequest(400 + " - Studia o podanej nazwie nie istnieja");
                         }
-                        reader.Close();
 
 //                      DODAWANIE DO ENROLLMENT
-                        com.CommandText = "select * from enrollment e inner join studies s on s.idstudy = e.idstudy where s.name = @name and semester = 1";
-                        com.Parameters.AddWithValue("@name", request.StudiesName);
+                        com.CommandText = "SELECT * FROM enrollment e INNER JOIN studies s on s.idstudy = e.idstudy WHERE semester = 1 AND name = sname";
+                        com.Parameters.AddWithValue("sname", request.StudiesName);
 
                         if (!reader.HasRows)
                         {
-                            com.CommandText = "insert into enrollment(idenrollment, semester, idstudy, startdate)" +
-                                "values((select Max(idEnrollment)+1 from enrollment), 1, select idstudy from studies where name = @name), GETDATE())";
+                            com.CommandText = "INSERT INTO enrollment(idenrollment, semester, idstudy, startdate)" +
+                                "VALUES((select Max(idEnrollment)+1 from enrollment), 1, SELECT idstudy FROM Studies WHERE name = sname), GETDATE())";
+                            com.Parameters.AddWithValue("sname", request.StudiesName);
+
+                            com.ExecuteNonQuery();
+                        }
+                        reader.Close();
+
+ //                     DODAWANIE NOWEGO STUDENTA
+ //                     zmienne sa z @ bo inaczej SQL krzyczal ze mu nie pasuje
+                        com.CommandText = "SELECT * FROM Student WHERE indexnumber = @es";
+                        com.Parameters.AddWithValue("@es", request.IndexNumber);
+                        reader = com.ExecuteReader();
+
+                        if (!reader.HasRows)
+                        {
+                            reader.Close();
+                            com.CommandText = "INSERT INTO Student(indexnumber, firstname, lastname, birthdate, idenrollment)" +
+                            "values(@es, @firstname, @lastname, @birthdate, (SELECT idenrollment FROM enrollment e INNER JOIN Studies s on e.idstudy = s.idstudy WHERE semester = 1 AND s.name = @sname))";
+                            com.Parameters.AddWithValue("@firstname", request.FirstName);
+                            com.Parameters.AddWithValue("@lastname", request.LastName);
+                            com.Parameters.AddWithValue("@birthdate", DateTime.Parse(request.BirthDate));
 
                             com.ExecuteNonQuery();
                             reader.Close();
-                        }
-
-//                      DODAWANIE NOWEGO STUDENTA
-                        com.CommandText = "select * from studentsapbd where indexnumber = @index";
-                        com.Parameters.AddWithValue("@index", request.IndexNumber);
-
-                        if (reader.HasRows)
-                        {
-                            return BadRequest(400);
                         }
                         else
                         {
-                            com.CommandText = "insert into students(indexnumber, firstname, lastname, birthdate, idenrollment)" +
-                                "values(@index, @firstname, @lastname, @birthdate, (select idenrollment from enrollment n inner join studies on enrollment.idstudy = studies.idstudy where studies.name = @name and semester = 1))";
-                            com.Parameters.AddWithValue("@firstname", request.FirstName);
-                            com.Parameters.AddWithValue("@lastname", request.LastName);
-                            com.Parameters.AddWithValue("@birthdate", request.BirthDate);
-
-                            com.ExecuteNonQuery();
-                            reader.Close();
+                            return BadRequest(400 + " - Student o podanym Indexie istnieje!");
                         }
 
                         transaction.Commit();
