@@ -1,0 +1,31 @@
+POST
+/api/enrollments/promotions
+{
+"Studies": "IT",
+"Semester": 1
+}
+
+
+
+POST
+/api/enrollments
+{
+"IndexNumber": "s12345",
+"FirstName": "Tomasz",
+"LastName": "Kot",
+"BirthDate": "30.03.1993",
+"Studies": "IT"
+}
+
+
+
+POST
+/api/enrollments
+{
+"IndexNumber": "s12345",
+"FirstName": "Tomasz",
+"LastName": "Kot",
+"BirthDate": "30.03.1993",
+"Studies": "IT"
+}
+?Index=s1234
