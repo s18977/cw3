@@ -77,6 +77,7 @@ namespace cw3.Services
                         }
 
                         transaction.Commit();
+                        transaction.Dispose();
 
                         return true;
                     }
@@ -129,6 +130,7 @@ namespace cw3.Services
                     com.Parameters.AddWithValue("reqSemester", promote.semester);
                     com.ExecuteNonQuery();
                     transaction.Commit();
+                    transaction.Dispose();
 
                     return true;
                 }

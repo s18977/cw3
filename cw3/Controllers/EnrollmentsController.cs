@@ -42,7 +42,7 @@ namespace cw3.Controllers
                 return BadRequest(404);
             }
 
-            return Ok(201 + promote.ToString());
+            return Ok(promote);
         }
 
     }
