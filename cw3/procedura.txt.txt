@@ -1,0 +1,31 @@
+create procedure PromoteStudents @name nvarchar(100), @semester int AS
+BEGIN
+	DECLARE @ids int = (SELECT IdStudy FROM Studies s WHERE s.name=@name);
+	if @ids is null
+	BEGIN
+		RAISERROR (15600,-1,-1, 'Wporwadzone studia nie wystepuja w bazie!');  
+	END
+
+	DECLARE @ide int = (SELECT IdEnrollment FROM Enrollment e WHERE e.Semester=(@semester+1) AND e.IdStudy=@ids);
+
+	if @ide is null
+	BEGIN
+		DECLARE @newide int = (SELECT max(IdEnrollment) FROM Enrollment)+1;
+
+		INSERT INTO Enrollment 
+		VALUES (@newide, (@Semester+1), @ids,  GETDATE());
+	END
+
+	UPDATE Student 
+	SET IdEnrollment = (SELECT max(IdEnrollment) FROM Enrollment e
+	INNER JOIN Studies s 
+	ON e.IdStudy = s.IdStudy 
+	WHERE s.Name=@name AND e.Semester=(@semester+1)) 
+	WHERE IdEnrollment = (SELECT IdEnrollment FROM Enrollment e2
+					INNER JOIN Studies s2 
+					ON e2.IdStudy = s2.IdStudy 
+					WHERE s2.Name=@name AND e2.Semester=@Semester );
+
+
+END
+GO
