@@ -44,6 +44,5 @@ namespace cw3.Controllers
 
             return Ok(promote);
         }
-
     }
 }

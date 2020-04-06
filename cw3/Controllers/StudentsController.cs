@@ -29,7 +29,7 @@ namespace cw3.Controllers
                 using (var com = new SqlCommand())
                 {
                     com.Connection = con;
-                    com.CommandText = "SELECT * FROM Students";
+                    com.CommandText = "SELECT * FROM Student";
                     //com.Parameters.AddWithValue("id", id);
 
                     con.Open();
@@ -75,5 +75,7 @@ namespace cw3.Controllers
                 }
             }
         }
+
+
     }
 }

@@ -136,5 +136,32 @@ namespace cw3.Services
                 }
             }
         }
+
+        public bool CheckIndex(string id)
+        {
+            using (var con = new SqlConnection("Data Source=db-mssql; Initial Catalog=s18977; Integrated Security=True"))
+            {
+                using (var com = new SqlCommand())
+                {
+                    Console.WriteLine(id);
+
+                    com.Connection = con;
+                    com.CommandText = "SELECT * FROM Student s WHERE s.indexNumber = @index";
+                    com.Parameters.AddWithValue("@index", id);
+                    con.Open();
+
+                    var dr = com.ExecuteReader();
+                    Console.WriteLine(dr.Read());
+
+                    if (dr.HasRows)
+                    {
+                        return true;
+                    }
+
+                    return false;
+                }
+            }
+        }
+
     }
 }

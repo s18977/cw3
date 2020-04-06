@@ -9,5 +9,7 @@ namespace cw3.Services
         public bool EnrollStudent(EnrollStudentRequest request);
 
         public bool Promote(PromoteStudents promote);
+
+        public bool CheckIndex(string index);
     }
 }
