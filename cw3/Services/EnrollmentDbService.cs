@@ -13,7 +13,6 @@ namespace cw3.Services
     public class EnrollmentDbService : IStudentsDbService
     {
         public string dbName = "Data Source=db-mssql;Initial Catalog=s18977;Integrated Security=True;";
-        [HttpPost]
         public bool EnrollStudent(EnrollStudentRequest request)
         {
             var student = new Student();
@@ -98,8 +97,6 @@ namespace cw3.Services
             }
         }
 
-        [HttpPost]
-        [Route("api/enrollments/promotions")]
         public bool Promote(PromoteStudents promote)
         {
             using (SqlConnection con = new SqlConnection(dbName))
