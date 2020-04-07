@@ -19,6 +19,7 @@ namespace cw3.Middlewares
 
         public async Task InvokeAsync(HttpContext httpContext)
         {
+            httpContext.Request.EnableBuffering();
             string path = @"Middlewares\requestLog.txt";
 
             if (!File.Exists(path))
