@@ -1,5 +1,6 @@
 ﻿using cw3.DTOs.Requests;
 using cw3.Models;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System;
 using System.Collections.Generic;
@@ -13,6 +14,8 @@ namespace cw3.Services
     public class EnrollmentDbService : IStudentsDbService
     {
         public string dbName = "Data Source=db-mssql;Initial Catalog=s18977;Integrated Security=True;";
+        
+        [Authorize(Roles = "Employee")]
         public bool EnrollStudent(EnrollStudentRequest request)
         {
             var student = new Student();
@@ -32,7 +35,7 @@ namespace cw3.Services
                         com.Parameters.AddWithValue("name", request.Studies);
                         com.Transaction = transaction;
                         SqlDataReader reader = com.ExecuteReader();
-
+                        
                         if (!reader.HasRows)
                         {
                             return false;
@@ -98,6 +101,7 @@ namespace cw3.Services
             }
         }
 
+        [Authorize(Roles = "Employee")]
         public bool Promote(PromoteStudents promote)
         {
             using (SqlConnection con = new SqlConnection(dbName))
