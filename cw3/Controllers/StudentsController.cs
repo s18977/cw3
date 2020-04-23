@@ -19,7 +19,7 @@ namespace cw3.Controllers
     [Route("api/students")]
     public class StudentsController : ControllerBase
     {
-        public string dbName = "Data Source=db-mssql; Initial Catalog=s18977; Integrated Security=True";
+        public static string dbName = "Data Source=db-mssql; Initial Catalog=s18977; Integrated Security=True";
         public IConfiguration Configuration { get; set; }
         public StudentsController(IConfiguration configuration)
         {
@@ -87,17 +87,21 @@ namespace cw3.Controllers
         [HttpPost]
         public IActionResult Login(LoginRequest request)
         {
+            var pass = String.Empty;
+            var salt = String.Empty;
+
+            var refreshToken = Guid.NewGuid();
+            Console.WriteLine(refreshToken);
 
             using (var con = new SqlConnection(dbName))
             {
                 using (var com = new SqlCommand(dbName))
                 {
-                    var pass = CreateHash(request.Haslo, CreateSalt());
+                    //pass = CreateHash(request.Haslo, CreateSalt(request.Login), request.Login);
 
                     com.Connection = con;
-                    com.CommandText = "SELECT * FROM student s WHERE s.IndexNumber = @index AND s.Password = @pass";
+                    com.CommandText = "SELECT * FROM student s WHERE s.IndexNumber = @index";
                     com.Parameters.AddWithValue("@index", request.Login);
-                    com.Parameters.AddWithValue("@pass", pass);
 
                     con.Open();
                     SqlDataReader reader = com.ExecuteReader();
@@ -105,38 +109,61 @@ namespace cw3.Controllers
                     if (!reader.HasRows)
                     {
                         return Unauthorized("Podany login lub hasło nie wystepuja w bazie!");
+                    } else if (reader.Read())
+                    {
+                         pass = reader.GetString(reader.GetOrdinal("Password"));
+                         salt = reader.GetString(reader.GetOrdinal("salt"));
+
+                        reader.DisposeAsync();
+
+                        com.CommandText = "UPDATE student SET refreshToken = @token WHERE IndexNumber = @id";
+                        com.Parameters.AddWithValue("@token", refreshToken);
+                        com.Parameters.AddWithValue("@id", request.Login);
+                        com.ExecuteNonQuery();
                     }
+                    con.Close();
                 }
             }
 
-            var claims = new[]
+            if (Validate(request.Haslo, salt, pass, request.Login))
             {
+
+                var claims = new[]
+                {
                 new Claim(ClaimTypes.NameIdentifier, "1"),
                 new Claim(ClaimTypes.Name, request.Login),
                 new Claim(ClaimTypes.Role, "Employee")
             };
 
-            var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(Configuration["SecretKey"]));
-            var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
+                var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(Configuration["SecretKey"]));
+                var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
 
-            var token = new JwtSecurityToken
-            (
-                issuer: "Gakko",
-                audience: "Students",
-                claims: claims,
-                expires: DateTime.Now.AddMinutes(10),
-                signingCredentials: creds
+                var token = new JwtSecurityToken
+                (
+                    issuer: "Gakko",
+                    audience: "Students",
+                    claims: claims,
+                    expires: DateTime.Now.AddMinutes(10),
+                    signingCredentials: creds
 
-            );
+                );
 
-            return Ok(new {
-                token = new JwtSecurityTokenHandler().WriteToken(token),
-                refreshToken = Guid.NewGuid()
-            });
+
+
+                return Ok(
+                    new
+                {
+                    token = new JwtSecurityTokenHandler().WriteToken(token),
+                    refreshToken = refreshToken,
+                    Message = "Zalogowano pomyślnie"
+                    });
+            }
+
+            return NotFound("Podany login lub hasło nie istnieja");
         }
 
         //WYKLAD 8 59.07 FUNKCJA HASHUJACA
-        public static string CreateHash(string value, string salt)
+        public static string CreateHash(string value, string salt, string id)
         {
             var valueBytes = KeyDerivation.Pbkdf2(
                 password: value,
@@ -146,21 +173,50 @@ namespace cw3.Controllers
                 numBytesRequested: 256 / 8
                 );
 
-            return Convert.ToBase64String(valueBytes);
+            using (var con =new SqlConnection(dbName))
+            {
+                using (var com = new SqlCommand(dbName))
+                {
+                    com.Connection = con;
+                    com.CommandText = "UPDATE student SET Password = @pass WHERE indexNumber = @id";
+                    com.Parameters.AddWithValue("@id", id);
+                    com.Parameters.AddWithValue("@pass", Convert.ToBase64String(valueBytes));
+                    con.Open();
+                    com.ExecuteNonQuery();
+                    con.Close();
+
+                }
+            }
+
+                return Convert.ToBase64String(valueBytes);
         }
 
-        public static string CreateSalt()
+        public static string CreateSalt(string id)
         {
             byte[] randomBytes = new byte[128 / 8];
             using (var generator = RandomNumberGenerator.Create())
             {
                 generator.GetBytes(randomBytes);
+                using (var con = new SqlConnection(dbName))
+                {
+                    using (var com = new SqlCommand(dbName))
+                    {
+                        com.Connection = con;
+                        com.CommandText = "UPDATE student SET salt = @pass WHERE IndexNumber = @id";
+                        com.Parameters.AddWithValue("@id", id);
+                        com.Parameters.AddWithValue("@pass", Convert.ToBase64String(randomBytes));
+                        con.Open();
+                        com.ExecuteNonQuery();
+                        con.Close();
+                    }
+                }
+
                 return Convert.ToBase64String(randomBytes);
             }
         }
 
-        public static bool Validate(string value, string salt, string hash) 
-            => CreateHash(value, salt) == hash;
+        public static bool Validate(string value, string salt, string hash, string id) 
+            => CreateHash(value, salt, id) == hash;
 
         [HttpPost("refresh-token/{token}")]
         public IActionResult RefreshToken(string refToken)
@@ -186,7 +242,21 @@ namespace cw3.Controllers
 
             );
 
-            return Ok();
+            using (var con = new SqlConnection(dbName))
+            {
+                using (var com = new SqlCommand(dbName))
+                {
+                    com.Connection = con;
+                    com.CommandText = "UPDATE student SET refreshToken = @pass WHERE indexNumber = @id";
+                    com.Parameters.AddWithValue("@id", "s18977");
+                    com.Parameters.AddWithValue("@pass", new JwtSecurityTokenHandler().WriteToken(token));
+                    con.Open();
+                    com.ExecuteNonQuery();
+                    con.Close();
+                }
+            }
+
+            return Ok("Token zaktualizowany");
         }
 
     }
