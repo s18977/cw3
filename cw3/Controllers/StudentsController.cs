@@ -247,9 +247,9 @@ namespace cw3.Controllers
                 using (var com = new SqlCommand(dbName))
                 {
                     com.Connection = con;
-                    com.CommandText = "UPDATE student SET refreshToken = @pass WHERE indexNumber = @id";
-                    com.Parameters.AddWithValue("@id", "s18977");
-                    com.Parameters.AddWithValue("@pass", new JwtSecurityTokenHandler().WriteToken(token));
+                    com.CommandText = "UPDATE student SET refreshToken = @token WHERE refreshToken = @oldToken";
+                    com.Parameters.AddWithValue("@oldToken", refToken);
+                    com.Parameters.AddWithValue("@token", new JwtSecurityTokenHandler().WriteToken(token));
                     con.Open();
                     com.ExecuteNonQuery();
                     con.Close();
