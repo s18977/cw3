@@ -1,19 +1,17 @@
-﻿using cw3.DTOs.Requests;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace cw3.Models
+namespace cw3.DTOs.Requests
 {
-    public class Student
+    public class StudentUpdateRequest
     {
-        [Key]
+        [Required(ErrorMessage = "Musisz podac przynajmniej index studenta")]
         public string IndexNumber { get; set; }
         public string FirstName { get; set; }
         public string LastName { get; set; }
-        public DateTime BirthDate { get; set; }
-        public int IdEnrollment { get; set; }
+        public string BirthDate { get; set; }
     }
 }
